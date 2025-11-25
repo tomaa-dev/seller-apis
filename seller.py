@@ -12,7 +12,23 @@ logger = logging.getLogger(__file__)
 
 
 def get_product_list(last_id, client_id, seller_token):
-    """Получить список товаров магазина озон"""
+    """Receives a list of products according to the set parameters.
+
+    Args:
+        last_id (str): last element identifier.
+        client_id (str): unique client number for identification in the system.
+        seller_token (str): api-key (token) of the seller.
+
+    Returns:
+         list: a list of products.
+         
+    Examples:
+        >>> get_product_list("", "01234567-89ab-cdef-0123-456789abcdef", "api-key")
+         [{'product_id': 12345, 'name': 'Product example', ...}, ...]
+
+         >>> get_product_list("", "invalid_client_id", "api-key")
+         Client Error: Unauthorized for url
+    """
     url = "https://api-seller.ozon.ru/v2/product/list"
     headers = {
         "Client-Id": client_id,
@@ -32,7 +48,21 @@ def get_product_list(last_id, client_id, seller_token):
 
 
 def get_offer_ids(client_id, seller_token):
-    """Получить артикулы товаров магазина озон"""
+    """Gets a list of offerids (articles) of all products in a store on Ozon 
+    via the paginated API
+
+    Args:
+        client_id (str): unique client number for identification in the system.
+        seller_token (str): api-key (token) of the seller.
+
+    Returns:
+        list: List of offerid string values ​​for all found products.
+
+    Examples:
+        >>> ids = get_offer_ids("client_id", "seller_token")
+        >>> isinstance(ids, list)
+        True
+    """
     last_id = ""
     product_list = []
     while True:
@@ -49,7 +79,13 @@ def get_offer_ids(client_id, seller_token):
 
 
 def update_price(prices: list, client_id, seller_token):
-    """Обновить цены товаров"""
+    """Generates and sends a POST request to the Ozon price import method 
+    with the passed list of prices
+
+    Args:
+        prices (list): a list of dictionaries with price objects.
+        
+    """
     url = "https://api-seller.ozon.ru/v1/product/import/prices"
     headers = {
         "Client-Id": client_id,
@@ -75,7 +111,24 @@ def update_stocks(stocks: list, client_id, seller_token):
 
 
 def download_stock():
-    """Скачать файл ostatki с сайта casio"""
+    """Downloads an archive with balances from a fixed URL, 
+    extracts an Excel file from it, 
+    reads data starting from the 18th line and returns a list of records
+
+    Args:
+        no arguments.
+        
+    Returns:
+        list: List of dictionaries with data from Excel.
+
+    Examples:
+        >>> remnants = downloadstock()
+        >>> isinstance(remnants, list)
+        True
+
+        >>> downloadstock()
+        requests.exceptions.ConnectionError: ...
+    """
     # Скачать остатки с сайта
     casio_url = "https://timeworld.ru/upload/files/ostatki.zip"
     session = requests.Session()
@@ -116,6 +169,13 @@ def create_stocks(watch_remnants, offer_ids):
 
 
 def create_prices(watch_remnants, offer_ids):
+    """It goes through the list of remaining items (watchremnants) 
+    and for those items whose code is present in offerids, 
+    it forms a dictionary with price information (corresponds to the Ozon format).
+    
+    Args:
+        watch_remnants (list)
+    """
     prices = []
     for watch in watch_remnants:
         if str(watch.get("Код")) in offer_ids:
@@ -143,9 +203,6 @@ def price_conversion(price: str) -> str:
     Returns:
          str: The numeric representation of the price, 
          stripped of all non-numeric characters.
-             
-    Raises:
-         ValueError: If the input string does not contain a valid numeric value.
          
     Examples:
         >>> price_conversion("5'990.00 руб.")
@@ -155,7 +212,22 @@ def price_conversion(price: str) -> str:
 
 
 def divide(lst: list, n: int):
-    """Разделить список lst на части по n элементов"""
+    """Generates a sequence of sublists of the original list, each of length at most n.
+
+    Args:
+        lst (list): Initial list of elements.
+        n (int): The size of each part; must be a positive integer.
+
+    Returns:
+        list: A generator that returns sublists (each a list of at most n elements).
+
+    Examples:
+        >>> list(divide([1, 2, 3, 4, 5], 2))
+        [[1, 2], [3, 4], [5]] 
+
+        >>> list(divide([1, 2, 3], 0))
+        ValueError: n must be a positive integer
+    """
     for i in range(0, len(lst), n):
         yield lst[i : i + n]
 
