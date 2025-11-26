@@ -56,7 +56,7 @@ def get_offer_ids(client_id, seller_token):
         seller_token (str): api-key (token) of the seller.
 
     Returns:
-        list: List of offerid string values ​​for all found products.
+        list: List of offer_id string values ​​for all found products.
 
     Examples:
         >>> ids = get_offer_ids("client_id", "seller_token")
@@ -174,7 +174,23 @@ def create_prices(watch_remnants, offer_ids):
     it forms a dictionary with price information (corresponds to the Ozon format).
     
     Args:
-        watch_remnants (list)
+        watch_remnants (list): list of dictionaries with information about products fro Excel.
+        offer_ids (list): List of offer_id string values ​​for all found products.
+    
+    Returns:
+        list : list of dictionaries with fields (parameters)
+    
+    >>> create_prices(watch_remnants, offer_ids)
+     [{"auto_action_enabled": "UNKNOWN",
+        "currency_code": "RUB",
+        "offer_id": "123",
+        "old_price": "0",
+        "price": "5990" },
+       {"auto_action_enabled": "UNKNOWN",
+        "currency_code": "RUB",
+        "offer_id": "789",
+        "old_price": "0",
+        "price": "1200" }]
     """
     prices = []
     for watch in watch_remnants:
