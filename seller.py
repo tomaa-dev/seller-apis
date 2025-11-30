@@ -84,7 +84,18 @@ def update_price(prices: list, client_id, seller_token):
 
     Args:
         prices (list): a list of dictionaries with price objects.
+        client_id (str): unique client number for identification in the system.
+        seller_token (str): api-key (token) of the seller.
         
+    Returns:
+        dict: The parsed JSON response from the API upon successful request.
+
+    Raises:
+        requests.exceptions.HTTPError: if the server returned an error code (response.raiseforstatus()).
+
+    Examples:
+        >>> update_price(prices, 'client_id', 'seller_token') 
+        {'result': {'processed': 1, 'errors': []}, 'request_id': '...'}
     """
     url = "https://api-seller.ozon.ru/v1/product/import/prices"
     headers = {
@@ -98,7 +109,23 @@ def update_price(prices: list, client_id, seller_token):
 
 
 def update_stocks(stocks: list, client_id, seller_token):
-    """Обновить остатки"""
+    """Sends a POST request to the Ozon API for bulk import of balances.
+    
+    Args:
+        stocks (list): list of dictionaries with residue objects that match the Ozon schema.
+        client_id (str): unique client number for identification in the system.
+        seller_token (str): api-key (token) of the seller.
+
+    Returns:
+        dict: The parsed JSON response from the API upon successful request.
+
+    Raises:
+        requests.exceptions.HTTPError: if the server returned an error code (response.raiseforstatus()).
+
+    Examples:
+        >>> updatestocks(stocks, client_id, seller_token)
+        {'result': {'processed': 1, 'errors': []}, 'requestid': '...'}
+    """
     url = "https://api-seller.ozon.ru/v1/product/import/stocks"
     headers = {
         "Client-Id": client_id,
@@ -149,7 +176,22 @@ def download_stock():
 
 
 def create_stocks(watch_remnants, offer_ids):
-    # Уберем то, что не загружено в seller
+    """Generate a list of remaining items for import into Ozon.
+
+    Args:
+        watch_remnants (list): list of dictionaries obtained from Excel.
+        offer_ids (list): List of offer_id string values ​​for all found products.
+
+    Returns:
+        list: A list of dictionaries of the form ready to be sent to the API.
+
+    Examples:
+        >>> createstocks(watches, offers)
+        [{'offer_id': 'SKU1', 'stock': 100},
+        {'offer_id': 'SKU2', 'stock': 0},
+        {'offer_id': 'SKU3', 'stock': 5},
+        {'offer_id': 'SKU4', 'stock': 0}]
+    """
     stocks = []
     for watch in watch_remnants:
         if str(watch.get("Код")) in offer_ids:
@@ -249,6 +291,19 @@ def divide(lst: list, n: int):
 
 
 async def upload_prices(watch_remnants, client_id, seller_token):
+    """Generate and send prices to Ozon in batches.
+
+    Args:
+        watch_remnants (list): list of dictionaries with information about products fro Excel.
+        client_id (str): unique client number for identification in the system.
+        seller_token (str): api-key (token) of the seller.
+
+    Returns:
+        list: A list of dictionaries with prices in the format sent to the API.
+
+    Raises:
+        requests.exceptions.RequestException: on network errors or errors from updateprice/getofferids.
+    """
     offer_ids = get_offer_ids(client_id, seller_token)
     prices = create_prices(watch_remnants, offer_ids)
     for some_price in list(divide(prices, 1000)):
@@ -257,6 +312,19 @@ async def upload_prices(watch_remnants, client_id, seller_token):
 
 
 async def upload_stocks(watch_remnants, client_id, seller_token):
+    """Generate and send prices to Ozon in batches.
+    
+    Args:
+        watch_remnants (list): list of dictionaries with information about products fro Excel.
+        client_id (str): unique client number for identification in the system.
+        seller_token (str): api-key (token) of the seller.
+
+    Returns:
+        list: A list of dictionaries with prices in the format sent to the API.
+
+    Raises:
+        requests.exceptions.RequestException: on network errors or errors from updateprice/getofferids.
+    """
     offer_ids = get_offer_ids(client_id, seller_token)
     stocks = create_stocks(watch_remnants, offer_ids)
     for some_stock in list(divide(stocks, 100)):
