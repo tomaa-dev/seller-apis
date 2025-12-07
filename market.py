@@ -30,6 +30,23 @@ def get_product_list(page, campaign_id, access_token):
 
 
 def update_stocks(stocks, campaign_id, access_token):
+    """Send a list of remaining stock to the Market API
+
+    Args:
+        stocks (list): List of balance records prepared for the API.
+        campaign_id (list): Campaign ID in the Market.
+        access_token (str): access token (Bearer) used in the Authorization header.
+
+    Returns:
+        dict: parsed JSON response from the API (response.json()).
+
+    Raises:
+        ValueError / TypeError: Possible if the input data is invalid or if the server returns an unexpected response format (e.g., not JSON).
+
+    Examples:
+        >>> updatestocks(stocks, campaign_id, access_token)
+        {'result': {'processed': 1, 'errors': []}, 'requestid': '...'}
+    """
     endpoint_url = "https://api.partner.market.yandex.ru/"
     headers = {
         "Content-Type": "application/json",
@@ -62,7 +79,21 @@ def update_price(prices, campaign_id, access_token):
 
 
 def get_offer_ids(campaign_id, market_token):
-    """Получить артикулы товаров Яндекс маркета"""
+    """Get a list of all product codes for a campaign on Yandex Market.
+    
+    Args:
+        campaign_id (str): сampaign/store ID in the Market.
+        market_token (str): api-key (token).
+
+    Returns:
+        list: A list of strings containing the SKUs (shopSku) of all found products. 
+        An empty list is returned if no products are found.
+
+    Examples:
+        >>> ids = get_offer_ids("client_id", "seller_token")
+        >>> isinstance(ids, list)
+        True
+    """
     page = ""
     product_list = []
     while True:
@@ -78,7 +109,27 @@ def get_offer_ids(campaign_id, market_token):
 
 
 def create_stocks(watch_remnants, offer_ids, warehouse_id):
-    # Уберем то, что не загружено в market
+    """Generate a list of remaining items for uploading to Yandex Market.
+
+    Args:
+        watch_remnants (list/dict): List of dictionaries with residue data.
+        offer_ids (list): list of items (shopSku) uploaded to the Market.
+        warehouse_id (str): warehouse identifier for each entry.
+
+    Returns:
+        list of dict: list of records in the format for sending to the Market API.
+        
+    Raises:
+        TypeError: if the passed arguments have invalid types
+        ValueError: if the value in the "Quantity" field has an unexpected format and cannot be cast to int.
+
+    Examples:
+        >>> stocks = createstocks(watchremnants, offers.copy())
+        [{'offerid': 'SKU1', 'stock': 100},
+         {'offerid': 'SKU2', 'stock': 0},
+         {'offerid': 'SKU3', 'stock': 5},
+         {'offer_id': 'SKU4', 'stock': 0}]
+    """
     stocks = list()
     date = str(datetime.datetime.utcnow().replace(microsecond=0).isoformat() + "Z")
     for watch in watch_remnants:
