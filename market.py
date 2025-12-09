@@ -17,7 +17,7 @@ def get_product_list(page, campaign_id, access_token):
     Args:
         page (str): Page token for page-by-page retrieval.
         campaign_id (str): сampaign/store ID in the Market.
-        market_token (str): api-key (token).
+        access_token (str): access token (Bearer) used in the Authorization header.
 
     Returns:
         dict: The value of the "result" field from the API JSON response.
@@ -86,7 +86,7 @@ def update_price(prices, campaign_id, access_token):
     Args:
         prices (list): list of price objects (offers) in the format expected by the API.
         campaign_id (str): сampaign/store ID in the Market.
-        market_token (str): api-key (token).
+        access_token (str): access token (Bearer) used in the Authorization header.
 
     Returns:
         dict: Parsed JSON response from the API (in the current implementation, the entire response.json() is returned)
